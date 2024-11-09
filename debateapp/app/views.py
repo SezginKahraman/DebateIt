@@ -45,8 +45,10 @@ def room_detail(request, room_id):
     pro_team = Team.objects.get(room=room, team_type="PRO")
     con_team = Team.objects.get(room=room, team_type="CON")
     judge = Judge.objects.get(room=room)
+    rooms = Room.objects.filter(is_active=True)
 
     context = {
+        "rooms": rooms,
         "room": room,
         "pro_team": pro_team,
         "con_team": con_team,

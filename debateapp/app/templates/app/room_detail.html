@@ -2,59 +2,19 @@
 
 {% block content %}
   <div class="flex-1 p-6">
+    <a href="{% url 'room_list' %}" class="w-6 h-6 mt-3 flex items-center rounded-full justify-center hover:bg-gray-600 transition-colors duration-200">
+      <svg class="w-4 h-4 text-gray-300 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </a>
     <div class="mb-8 text-center">
       <h1 class="text-3xl font-bold mb-2">{{ room.name }}</h1>
       <p class="text-xl text-gray-400">Konu: {{ room.topic }}</p>
     </div>
 
-    <div class="grid grid-cols-3 gap-6 mb-8">
-      <!-- Savunan Takım -->
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h2 class="text-xl font-semibold mb-4 text-green-400">Savunan Takım</h2>
-        <ul class="space-y-2">
-          {% for participant in pro_participants %}
-            <li class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center">{{ participant.user.get_initials }}</div>
-              <span>{{ participant.user.get_full_name }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      <!-- Hakem -->
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h2 class="text-xl font-semibold mb-4 text-yellow-400">Hakem</h2>
-        <div class="flex items-center justify-center gap-2 mt-4">
-          <div class="w-12 h-12 rounded-full bg-yellow-700 flex items-center justify-center text-lg">
-            {% if judge.is_ai %}
-              AI
-            {% else %}
-              {{ judge.user.get_initials }}
-            {% endif %}
-          </div>
-          <span class="text-lg">
-            {% if judge.is_ai %}
-              AI Hakem
-            {% else %}
-              {{ judge.user.get_full_name }}
-            {% endif %}
-          </span>
-        </div>
-      </div>
-
-      <!-- Karşı Çıkan Takım -->
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h2 class="text-xl font-semibold mb-4 text-red-400">Karşı Çıkan Takım</h2>
-        <ul class="space-y-2">
-          {% for participant in con_participants %}
-            <li class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-red-700 flex items-center justify-center">{{ participant.user.get_initials }}</div>
-              <span>{{ participant.user.get_full_name }}</span>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
+    {% comment %}table{% endcomment %}
+    {% include 'app/partials/room_detail_debate_table.html' %}
+    {% comment %}table{% endcomment %}
 
     <div class="bg-gray-800 p-4 rounded-lg flex justify between items-center">
       <div class="flex justify-start w-1/3 gap-4">

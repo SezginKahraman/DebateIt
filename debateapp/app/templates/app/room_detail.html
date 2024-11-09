@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="flex-1 p-6">
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl font-bold mb-2">{{ room.name }}</h1>
+      <p class="text-xl text-gray-400">Konu: {{ room.topic }}</p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6 mb-8">
+      <!-- Savunan Takım -->
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-xl font-semibold mb-4 text-green-400">Savunan Takım</h2>
+        <ul class="space-y-2">
+          {% for participant in pro_participants %}
+            <li class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center">{{ participant.user.get_initials }}</div>
+              <span>{{ participant.user.get_full_name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Hakem -->
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-xl font-semibold mb-4 text-yellow-400">Hakem</h2>
+        <div class="flex items-center justify-center gap-2 mt-4">
+          <div class="w-12 h-12 rounded-full bg-yellow-700 flex items-center justify-center text-lg">
+            {% if judge.is_ai %}
+              AI
+            {% else %}
+              {{ judge.user.get_initials }}
+            {% endif %}
+          </div>
+          <span class="text-lg">
+            {% if judge.is_ai %}
+              AI Hakem
+            {% else %}
+              {{ judge.user.get_full_name }}
+            {% endif %}
+          </span>
+        </div>
+      </div>
+
+      <!-- Karşı Çıkan Takım -->
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-xl font-semibold mb-4 text-red-400">Karşı Çıkan Takım</h2>
+        <ul class="space-y-2">
+          {% for participant in con_participants %}
+            <li class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-red-700 flex items-center justify-center">{{ participant.user.get_initials }}</div>
+              <span>{{ participant.user.get_full_name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
+      <div class="flex gap-4">
+        <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700" onclick="raiseHand()">El Kaldır</button>
+        <button class="flex items-center gap-2 px-4 py-2 bg-orange-600 rounded-lg hover:bg-orange-700" onclick="takeBreak()">Mola</button>
+      </div>
+      <form method="post" action="{% url 'join_room' room.id %}" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="px-6 py-2 bg-green-600 rounded-lg hover:bg-green-700 font-semibold">Katıl</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    function raiseHand() {
+      fetch("{% url 'raise_hand' room.id %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === 'success') {
+            alert('El kaldırma işlemi başarılı')
+          }
+        })
+    }
+    
+    function takeBreak() {
+      fetch("{% url 'take_break' room.id %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === 'success') {
+            alert('Mola başarıyla alındı')
+          } else {
+            alert(data.message)
+          }
+        })
+    }
+  </script>
+{% endblock %}

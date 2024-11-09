@@ -1,0 +1,31 @@
+    pip install --upgrade distro-info
+
+    pip3 install --upgrade pip==23.2.1
+
+    pip install virtualenv
+
+    python -m virtualenv djangoenv                            ## use cmd not powershell !!!!!!
+    .\djangoenv\Scripts\activate  
+    .\djangoenv\Scripts\deactivate                      
+
+    pip install Django
+
+    django-admin startproject firstproject
+
+    python3 manage.py startapp firstapp ## create new controller + service (It is like .NET's controlller + service, UserController = UserApp, ProductController = ProductApp) 
+
+    python3 manage.py makemigrations
+
+    python3 manage.py migrate
+
+    python3 manage.py runserver  # run the application
+
+    # docker part
+    pip install pipreqs  # this creates requirements.txt
+
+    pipreqs .  # this writes all the packages that includes in this project to tell docker which packages needs to 
+               # be installed
+
+    docker build . -t my-django-app:latest && docker run -e PYTHONUNBUFFERED=1 -p  8000:8000 my-django-app 
+
+    DJANGO_SUPERUSER_PASSWORD=123123 python manage.py createsuperuser --no-input --username=admin2  --email=admin@admin.com

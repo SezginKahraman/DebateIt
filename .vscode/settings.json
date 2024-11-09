@@ -1,0 +1,16 @@
+{
+  "folder-color.pathColors": [
+    {
+      "folderPath": "DebateIt\\debateapp\\",
+      "color": "foldercolorizer.LightSalmon"
+    },
+    {
+      "folderPath": "DebateIt\\debateapp\\app\\",
+      "color": "foldercolorizer.LightRed"
+    },
+    {
+      "folderPath": "DebateIt\\debateapp\\account\\",
+      "color": "foldercolorizer.LightYellow"
+    }
+  ]
+}

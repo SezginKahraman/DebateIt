@@ -1,0 +1,70 @@
+{% load static %}
+<div
+  id="sidebar"
+  class="h-screen bg-gray-800 transition-all duration-300 ease-in-out relative"
+  :class="{'w-20': !isExpanded, 'w-64': isExpanded}"
+>
+  <!-- Genişlet/Daralt Butonu -->
+  <button
+    @click="isExpanded = !isExpanded"
+    class="absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-12 bg-gray-700 rounded-r-md flex items-center justify-center hover:bg-gray-600 transition-colors duration-200"
+  >
+    <svg
+      :class="{'rotate-180': isExpanded}"
+      class="w-4 h-4 text-gray-300 transition-transform duration-300"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  </button>
+
+  <!-- Odalar Listesi -->
+  <div class="py-4 px-3 space-y-4">
+    {% for room in rooms %}
+    <a
+      href="{% url 'room_detail' room.id %}"
+      class="flex items-center space-x-3 {% if room.id == current_room.id %}bg-blue-600{% else %}hover:bg-gray-700{% endif %} rounded-lg transition-colors duration-200 p-2"
+    >
+      <!-- Oda Avatarı -->
+      <div
+        class="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden flex items-center justify-center {% if room.id == current_room.id %}bg-blue-700{% else %}bg-gray-700{% endif %}"
+      >
+        {% if room.image %}
+        <img
+          src="{{ room.image.url }}"
+          alt="{{ room.name }}"
+          class="w-full h-full object-cover"
+        />
+        {% else %}
+        <span class="text-lg font-semibold"
+          >{{ room.get_initials }}</span
+        >
+        {% endif %}
+      </div>
+
+      <!-- Oda Bilgileri - Genişletilmiş Halde Gösterilir -->
+      <div
+        class="flex-1 overflow-hidden transition-all duration-300"
+        :class="{'opacity-0 w-0': !isExpanded, 'opacity-100 w-auto': isExpanded}"
+      >
+        <div class="truncate font-medium">{{ room.name }}</div>
+        <div class="text-sm text-gray-400 truncate">
+          {{ room.participant_count }} Katılımcı
+        </div>
+      </div>
+
+      <!-- Aktif Oda Göstergesi -->
+      {% if room.id == current_room.id %}
+      <div
+        class="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"
+        :class="{'ml-auto': isExpanded}"
+      ></div>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</div>

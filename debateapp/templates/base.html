@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}Münazara Uygulaması{% endblock %}</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  </head>
+  <body class="bg-gray-900 text-white" x-data="{ isExpanded: true }">
+    <div class="flex h-screen">
+      {% include 'app/sidebar.html' %}
+      <div class="flex-1">{% block content %}{% endblock %}</div>
+    </div>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

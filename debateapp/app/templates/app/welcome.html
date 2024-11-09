@@ -5,12 +5,12 @@
         Münazara Platformuna Hoş Geldiniz
       </h1>
       <p class="text-gray-400">
-        Fikirlerinizi paylaşın, tartışın ve öğrenin
+        Fikirlerinizi paylaşın, tartışın ve öğrenin.
       </p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-      {% for card in welcome_cards %}
+      {% for card in context.welcome_cards %}
       <div
         class="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors duration-300"
       >
@@ -18,9 +18,11 @@
           <div
             class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center"
           >
-            <i class="fas fa-{{ card.icon }} text-2xl"></i>
+            <i class="fas fa-{{ card.icon }} text-2xl text-white"></i>
           </div>
-          <h2 class="text-xl font-semibold">{{ card.title }}</h2>
+          <h2 class="text-xl text-white font-semibold">
+            {{ card.title }}
+          </h2>
           <p class="text-gray-400">{{ card.description }}</p>
           <a
             href="{{ card.button_url }}"

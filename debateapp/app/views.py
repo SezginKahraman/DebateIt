@@ -22,7 +22,7 @@ def room_list(request):
             {
                 "title": "İlk Münazarana Katıl",
                 "description": "Hemen bir tartışma odasına katıl ve fikirlerini paylaş",
-                "icon": "message-square",
+                "icon": "comment-alt",
                 "button_text": "Münazaraya Katıl",
                 "button_url": "#",
             },

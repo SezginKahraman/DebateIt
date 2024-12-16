@@ -1,48 +1,33 @@
-<div class="grid grid-cols-3 gap-6 mb-8">
-  <!-- Savunan Takım -->
-  <div class="bg-gray-800 p-6 rounded-lg">
-    <h2 class="text-xl font-semibold mb-4 text-green-400">Savunan Takım</h2>
-    <ul class="space-y-2">
-      {% for participant in pro_participants %}
-        <li class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center">{{ participant.user.get_initials }}</div>
-          <span>{{ participant.user.get_full_name }}</span>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-
-  <!-- Hakem -->
-  <div class="bg-gray-800 p-6 rounded-lg">
-    <h2 class="text-xl font-semibold mb-4 text-yellow-400">Hakem</h2>
-    <div class="flex items-center justify-center gap-2 mt-4">
-      <div class="w-12 h-12 rounded-full bg-yellow-700 flex items-center justify-center text-lg">
-        {% if judge.is_ai %}
-          AI
-        {% else %}
-          {{ judge.user.get_initials }}
-        {% endif %}
+<div class="max-w-6xl mx-auto">
+  <div class="grid grid-cols-2 gap-8 mb-8">
+    <!-- PRO Takımı -->
+    <div class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-blue-500/20">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Savunan Takım</h3>
       </div>
-      <span class="text-lg">
-        {% if judge.is_ai %}
-          AI Hakem
-        {% else %}
-          {{ judge.user.get_full_name }}
-        {% endif %}
-      </span>
+      <div id="pro-team-list" class="space-y-3">
+        <!-- Dinamik olarak doldurulacak -->
+      </div>
     </div>
-  </div>
 
-  <!-- Karşı Çıkan Takım -->
-  <div class="bg-gray-800 p-6 rounded-lg">
-    <h2 class="text-xl font-semibold mb-4 text-red-400">Karşı Çıkan Takım</h2>
-    <ul class="space-y-2">
-      {% for participant in con_participants %}
-        <li class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-red-700 flex items-center justify-center">{{ participant.user.get_initials }}</div>
-          <span>{{ participant.user.get_full_name }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+    <!-- CON Takımı -->
+    <div class="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-red-500/20">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M18 5a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5zM5.293 6.293a1 1 0 011.414 0L10 9.586l3.293-3.293a1 1 0 111.414 1.414L11.414 11l3.293 3.293a1 1 0 01-1.414 1.414L10 12.414l-3.293 3.293a1 1 0 01-1.414-1.414L8.586 11 5.293 7.707a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">Karşı Takım</h3>
+      </div>
+      <div id="con-team-list" class="space-y-3">
+        <!-- Dinamik olarak doldurulacak -->
+      </div>
+    </div>
   </div>
 </div>

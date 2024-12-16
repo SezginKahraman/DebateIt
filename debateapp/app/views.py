@@ -2,8 +2,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import Room, Team, Participant, Judge, Break
+
+from .forms import RoomCreateForm
+from .models import Room, Team, Participant, Judge, Break, Message
 import random
+
+
+@login_required
+def check_room_status(request, room_id):
+    """Kullanıcının odaya katılım durumunu kontrol eder"""
+    try:
+        participant = Participant.objects.get(user=request.user, team__room_id=room_id)
+        return JsonResponse(
+            {"is_participant": True, "team": participant.team.team_type}
+        )
+    except Participant.DoesNotExist:
+        return JsonResponse({"is_participant": False})
 
 
 # @login_required
@@ -44,6 +58,7 @@ def room_detail(request, room_id):
     room = get_object_or_404(Room, id=room_id)
     pro_team = Team.objects.get(room=room, team_type="PRO")
     con_team = Team.objects.get(room=room, team_type="CON")
+    messages = Message.objects.filter(room=room)
     judge = Judge.objects.get(room=room)
     rooms = Room.objects.filter(is_active=True)
 
@@ -53,10 +68,40 @@ def room_detail(request, room_id):
         "pro_team": pro_team,
         "con_team": con_team,
         "judge": judge,
+        "messages": messages,
         "pro_participants": Participant.objects.filter(team=pro_team),
         "con_participants": Participant.objects.filter(team=con_team),
     }
     return render(request, "app/room_detail.html", context)
+
+
+@login_required
+def create_room(request):
+    if request.method == "POST":
+        form = RoomCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            room = form.save(commit=False)
+            room.created_by = request.user
+            room.save()
+
+            # Odaya ait takımları oluştur
+            Team.objects.create(room=room, team_type="PRO")
+            Team.objects.create(room=room, team_type="CON")
+
+            # Hakem ata
+            Judge.objects.create(room=room, user=request.user)
+            context = {
+                "rooms": Room.objects.filter(is_active=True),
+                "room": room,
+                "pro_team": Team.objects.get(room=room, team_type="PRO"),
+                "con_team": Team.objects.get(room=room, team_type="CON"),
+                "judge": Judge.objects.get(room=room),
+            }
+            return render(request, "app/room_detail.html", context)
+    else:
+        form = RoomCreateForm()
+
+    return render(request, "app/create_room.html", {"form": form})
 
 
 # @login_required

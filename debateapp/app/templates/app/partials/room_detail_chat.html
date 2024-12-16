@@ -1,0 +1,331 @@
+{% load static %}
+
+{% block content %}
+  <div class="bg-gray-800 rounded-lg p-4 mb-4 h-96 flex flex-col">
+    <div id="chat-messages" class="flex-1 overflow-y-auto mb-4 space-y-2">
+      {% for message in messages %}
+        <div class="flex items-start space-x-2">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+              <span class="text-sm font-semibold">{{ message.user.username|first }}</span>
+            </div>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center space-x-2">
+              <span class="font-medium">{{ message.user.username }}</span>
+              <span class="text-xs text-gray-400">{{ message.created_at|time:'H:i' }}</span>
+            </div>
+            <p class="text-gray-300">{{ message.content }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="border-t border-gray-700 pt-4">
+      <form id="chat-form" class="flex space-x-2">
+        <input type="text" id="chat-input" class="flex-1 bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mesajınızı yazın..." />
+        <button type="submit" id="send-button" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700">Gönder</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // Temel değişkenler ve bağlantı kurulumu
+    const roomId = "{{ room.id }}";
+    const currentUser = "{{ request.user.username }}";
+    const isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    console.log(isAuthenticated);
+    let userTeam = null;
+    let isRoomParticipant = false;
+
+    // WebSocket bağlantısı
+    const chatSocket = new WebSocket(
+        (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + 
+        window.location.host + 
+        '/ws/debate/' + 
+        roomId + 
+        '/'
+    );
+
+    // DOM elementleri
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    const proTeamList = document.getElementById('pro-team-list');
+    const conTeamList = document.getElementById('con-team-list');
+    // Mevcut değişkenlere ekleyin
+    const leaveButton = document.getElementById('leave-button');
+    const joinButton = document.getElementById('join-button');
+
+    // Ayrılma fonksiyonu
+    function leaveTeam() {
+        if (confirm('Takımdan ayrılmak istediğinize emin misiniz?')) {
+            chatSocket.send(JSON.stringify({
+                'type': 'leave_team'
+            }));
+            isRoomParticipant = false;
+            userTeam = null;
+            updateUIBasedOnTeam();
+        }
+    }
+
+    // Sayfa kapatıldığında ayrılma
+    window.addEventListener('beforeunload', function() {
+        if (isRoomParticipant) {
+            chatSocket.send(JSON.stringify({
+                'type': 'leave_team'
+            }));
+        }
+    });
+
+    // Katılımcı listesini güncelleme
+    function updateParticipantLists(participants) {
+        proTeamList.innerHTML = '';
+        conTeamList.innerHTML = '';
+        
+        // PRO takımı katılımcılarını ekle
+        participants.PRO.forEach(participant => {
+            const participantDiv = createParticipantElement(participant);
+            proTeamList.appendChild(participantDiv);
+            if (participant.username === currentUser) {
+                userTeam = 'PRO';
+                isRoomParticipant = true;
+            }
+        });
+        
+        // CON takımı katılımcılarını ekle
+        participants.CON.forEach(participant => {
+            const participantDiv = createParticipantElement(participant);
+            conTeamList.appendChild(participantDiv);
+            if (participant.username === currentUser) {
+                userTeam = 'CON';
+                isRoomParticipant = true;
+            }
+        });
+        
+        updateUIBasedOnTeam();
+    }
+
+    function createParticipantElement(participant) {
+        
+    const div = document.createElement('div');
+    div.className = 'group flex items-center gap-3 p-3 bg-gray-700/50 hover:bg-gray-700/70 rounded-lg transition-all duration-300 backdrop-blur-sm border border-gray-600/50';
+    
+    // Avatar rengi kullanıcı adına göre belirlensin
+    const colors = ['blue', 'green', 'yellow', 'purple', 'pink'];
+    const colorIndex = participant.username.charCodeAt(0) % colors.length;
+    const color = colors[colorIndex];
+    
+    div.innerHTML = `
+        <div class="relative">
+            <div class="w-10 h-10 rounded-full bg-${color}-500/20 flex items-center justify-center ring-2 ring-${color}-500/30 group-hover:ring-${color}-500/50 transition-all duration-300">
+                <span class="text-sm font-bold text-${color}-400">${participant.username[0].toUpperCase()}</span>
+            </div>
+            ${participant.is_speaking ? 
+                `<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full ring-2 ring-gray-800 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
+                    </svg>
+                </div>` 
+                : ''
+            }
+        </div>
+        
+        <div class="flex-1">
+            <div class="font-medium text-gray-200 group-hover:text-white transition-colors duration-300">
+                ${participant.username}
+            </div>
+            <div class="text-sm text-gray-400">
+                ${participant.speaking_time > 0 ? `${Math.floor(participant.speaking_time / 60)}:${(participant.speaking_time % 60).toString().padStart(2, '0')}` : 'Henüz konuşmadı'}
+            </div>
+        </div>
+        
+        ${participant.hand_raised ? 
+            `<div class="animate-bounce">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.94 3.646a.5.5 0 01.706.708L6.293 7H9a.5.5 0 01.5.5v1a.5.5 0 01-1 0v-.5H5.914l1.293 1.293a.5.5 0 11-.707.708l-2-2a.5.5 0 010-.708l2-2zM13 7h2.086l-1.293-1.293a.5.5 0 11.707-.708l2 2a.5.5 0 010 .708l-2 2a.5.5 0 01-.707-.708L15.086 8H13a.5.5 0 01-.5-.5v-1a.5.5 0 01.5-.5z" clip-rule="evenodd" />
+                </svg>
+            </div>` 
+            : ''
+        }
+    `;
+    
+    return div;
+}
+
+    // updateUIBasedOnTeam fonksiyonunu güncelleyin
+    function updateUIBasedOnTeam() {
+        if (!isAuthenticated) {
+            chatInput.placeholder = "Mesaj göndermek için giriş yapın";
+            chatInput.disabled = true;
+            joinButton.style.display = 'none';
+            leaveButton.style.display = 'none';
+        } else if (!isRoomParticipant) {
+            chatInput.placeholder = "Mesaj göndermek için bir takıma katılın";
+            chatInput.disabled = true;
+            sendButton.disabled = true;
+            joinButton.style.display = 'block';
+            leaveButton.style.display = 'none';
+        } else {
+            chatInput.placeholder = "Mesajınızı yazın...";
+            chatInput.disabled = false;
+            sendButton.disabled = false;
+            joinButton.style.display = 'none';
+            leaveButton.style.display = 'block';
+        }
+    }
+
+    // Mesaj ekleme
+    function addMessageToChat(data) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex items-start space-x-2 mb-4';
+        
+        messageDiv.innerHTML = `
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                    <span class="text-sm font-semibold">${data.username[0].toUpperCase()}</span>
+                </div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center space-x-2">
+                    <span class="font-medium">${data.username}</span>
+                    <span class="text-xs text-gray-400">${data.timestamp}</span>
+                </div>
+                <p class="text-gray-300">${data.message}</p>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Takıma katılma
+    function joinTeam(teamType) {
+        if (!isAuthenticated) {
+            window.location.href = `/signin/?next=/room/${roomId}/`;
+            return;
+        }
+        console.log('Takıma katılma:', teamType);
+        chatSocket.send(JSON.stringify({
+            'type': 'join_team',
+            'team': teamType
+        }));
+    }
+
+    // El kaldırma
+    function raiseHand() {
+        if (!isRoomParticipant) {
+            alert('El kaldırmak için önce bir takıma katılmalısınız.');
+            return;
+        }
+        
+        chatSocket.send(JSON.stringify({
+            'type': 'raise_hand'
+        }));
+    }
+
+    // Mola alma
+    function takeBreak() {
+        if (!isRoomParticipant) {
+            alert('Mola almak için önce bir takıma katılmalısınız.');
+            return;
+        }
+        
+        chatSocket.send(JSON.stringify({
+            'type': 'take_break'
+        }));
+    }
+
+    // WebSocket event handlers
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        switch(data.type) {
+            case 'participant_list':
+                updateParticipantLists(data.participants);
+                break;
+                
+            case 'user_join':
+                console.log(`${data.username} odaya katıldı`);
+                break;
+                
+            case 'user_leave':
+                console.log(`${data.username} odadan ayrıldı`);
+                break;
+                
+            case 'team_update':
+                if (data.action === 'leave' && data.username === currentUser) {
+                    isRoomParticipant = false;
+                    userTeam = null;
+                }
+                chatSocket.send(JSON.stringify({
+                    'type': 'get_participants'
+                }));
+                break;
+                
+            case 'chat_message':
+                addMessageToChat(data);
+                break;
+                
+            case 'hand_raised':
+                updateParticipantLists(data.participants);
+                break;
+                
+            case 'break_started':
+                alert(`${data.team} takımı mola aldı`);
+                break;
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat bağlantısı kapandı');
+    };
+
+    chatSocket.onerror = function(e) {
+        console.error('WebSocket hatası:', e);
+    };
+
+    // Form submit handler
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log(isAuthenticated, isRoomParticipant);
+        if (!isAuthenticated) {
+            window.location.href = `/account/signin/?next=/room/${roomId}/`;
+            return;
+        }
+        
+        if (!isRoomParticipant) {
+            const joinRoom = confirm('Mesaj göndermek için bir takıma katılmanız gerekiyor. Katılmak ister misiniz?');
+            if (joinRoom) {
+                // Rastgele takım seç
+                const team = Math.random() < 0.5 ? 'PRO' : 'CON';
+                joinTeam(team);
+            }
+            return;
+        }
+        
+        const message = chatInput.value.trim();
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'type': 'chat_message',
+                'message': message
+            }));
+            chatInput.value = '';
+        }
+    });
+
+    // Rastgele takıma katılma fonksiyonu (isteğe bağlı)
+    function joinRandomTeam() {
+        const team = Math.random() < 0.5 ? 'PRO' : 'CON';
+        joinTeam(team);
+    }
+
+    // Sayfa yüklendiğinde UI'ı güncelle
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUIBasedOnTeam();
+    });
+</script>
+{% endblock %}

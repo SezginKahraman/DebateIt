@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="min-h-screen flex items-center justify-center p-4 bg-gray-900">
+    <div class="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-xl shadow-lg">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold text-white">Yeni Münazara Odası Oluştur</h2>
+        <p class="mt-2 text-gray-400">Yeni bir tartışma başlatmak için formu doldurun</p>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data" class="mt-8 space-y-6">
+        {% csrf_token %}
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-gray-300">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.name.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-gray-300">{{ form.topic.label }}</label>
+            {{ form.topic }}
+            {% if form.topic.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.topic.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-gray-300">{{ form.image.label }}</label>
+            {{ form.image }}
+            {% if form.image.errors %}
+              <p class="text-red-500 text-sm mt-1">{{ form.image.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Oda Oluştur</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
